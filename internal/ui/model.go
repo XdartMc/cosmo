@@ -119,7 +119,7 @@ func (m Model) View() string {
 		return "\n error: " + m.err.Error() + "\n"
 	}
 	if m.width == 0 {
-		return ""
+		return "\n  loading dashboard...\n"
 	}
 	return RenderDashboard(m)
 }
