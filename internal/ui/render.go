@@ -78,17 +78,41 @@ func RenderDashboard(m Model) string {
 	bottomRow := lipgloss.JoinHorizontal(lipgloss.Top, bottomLeft, bottomRight)
 
 	now := time.Now().Format("15:04:05")
-    header := lipgloss.JoinHorizontal(
-    lipgloss.Top,
-    titleStyle.Render("  COSMO — PostgreSQL Mission Control  "),
-    labelStyle.Render("  "+now+"  "),
-)
-	footer := lipgloss.JoinHorizontal(
-		lipgloss.Top,
-		labelStyle.Render("  tab: switch panel  q: quit  "),
-		labelStyle.Render("  |  auto-refresh: 2s  "),
-		labelStyle.Render("  |  cosmo v0.2.0  "),
-	)
+
+logo := lipgloss.NewStyle().
+    Foreground(lipgloss.Color("#00d4ff")).
+    Bold(true).
+    Render("◆ COSMO")
+
+title := lipgloss.NewStyle().
+    Foreground(lipgloss.Color("#ffffff")).
+    Bold(true).
+    Render(" POSTGRESQL MISSION CONTROL  v0.2.0")
+
+connInfo := ""
+if m.overview != nil {
+    connInfo = labelStyle.Render("  ● LIVE  |  ") +
+        valueStyle.Render(m.overview.DatabaseName)
+}
+
+clock := labelStyle.Render(now)
+
+headerLeft := lipgloss.JoinHorizontal(lipgloss.Top, logo, title)
+headerRight := lipgloss.JoinHorizontal(lipgloss.Top, connInfo, labelStyle.Render("  |  "), clock)
+
+header := lipgloss.NewStyle().
+    Width(m.width).
+    Render(
+        lipgloss.JoinHorizontal(
+            lipgloss.Top,
+            lipgloss.NewStyle().Width(m.width/2).Render(headerLeft),
+            lipgloss.NewStyle().Width(m.width/2).Align(lipgloss.Right).Render(headerRight),
+        ),
+    )
+
+	footer := lipgloss.NewStyle().
+	    Foreground(lipgloss.Color("#555555")).
+		Render("  [TAB] switch panel  |  [R] refresh  |  [Q] quit  |  auto-refresh 2s |  cosmo v0.2.0")
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
