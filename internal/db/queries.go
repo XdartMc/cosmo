@@ -2,20 +2,26 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type DB struct {
 	conn *pgxpool.Pool
+	prevLSN int64
+	prevTime time.Time
 }
 
 func New(databaseURL string) (*DB, error) {
-	conn, err := pgxpool.New(context.Background(), databaseURL)
+	pool, err := pgxpool.New(context.Background(), databaseURL)
 	if err != nil {
 		return nil, err
 	}
-	return &DB{conn: conn}, nil
+	return &DB{
+		conn: pool,
+		prevTime: time.Now(),
+	}, nil
 }
 
 func (db *DB) Close() {
@@ -50,6 +56,7 @@ type WALStats struct {
 	LiveTuples     int64
 	AutovacuumCount int64
 	CheckpointsPS  int64
+	WALRateMBPS     float64
 }
 
 type LockInfo struct {
@@ -163,6 +170,16 @@ func (db *DB) GetWALStats(ctx context.Context) (*WALStats, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	now := time.Now()
+	elapsed := now.Sub(db.prevTime).Seconds()
+	if elapsed > 0 && db.prevLSN > 0 {
+		bytesDiff := stats.WALBytesPS - db.prevLSN
+		stats.WALRateMBPS = float64(bytesDiff) / elapsed / 1024 / 1024
+	}
+	db.prevLSN = stats.WALBytesPS
+	db.prevTime = now
+
 	return &stats, nil
 }
 

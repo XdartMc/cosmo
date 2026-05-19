@@ -2,34 +2,33 @@ package ui
 
 import (
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
-
 var (
-    goodStyle = lipgloss.NewStyle().
-            Foreground(lipgloss.Color("#00ff88")).
-            Bold(true)
+	goodStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#00ff88")).
+			Bold(true)
 
-    warnStyle = lipgloss.NewStyle().
-            Foreground(lipgloss.Color("#ffaa00")).
-            Bold(true)
+	warnStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#ffaa00")).
+			Bold(true)
 
-    critStyle = lipgloss.NewStyle().
-            Foreground(lipgloss.Color("#ff4444")).
-            Bold(true)
+	critStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#ff4444")).
+			Bold(true)
 )
 
 func healthColor(value float64, good float64, warn float64) lipgloss.Style {
-    if value >= good {
-        return goodStyle
-    } else if value >= warn {
-        return warnStyle
-    }
-    return critStyle
+	if value >= good {
+		return goodStyle
+	} else if value >= warn {
+		return warnStyle
+	}
+	return critStyle
 }
 
 var (
@@ -79,39 +78,39 @@ func RenderDashboard(m Model) string {
 
 	now := time.Now().Format("15:04:05")
 
-logo := lipgloss.NewStyle().
-    Foreground(lipgloss.Color("#00d4ff")).
-    Bold(true).
-    Render("◆ COSMO")
+	logo := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#00d4ff")).
+		Bold(true).
+		Render("◆ COSMO")
 
-title := lipgloss.NewStyle().
-    Foreground(lipgloss.Color("#ffffff")).
-    Bold(true).
-    Render(" POSTGRESQL MISSION CONTROL  v0.2.0")
+	title := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#ffffff")).
+		Bold(true).
+		Render(" POSTGRESQL MISSION CONTROL  v0.2.0")
 
-connInfo := ""
-if m.overview != nil {
-    connInfo = labelStyle.Render("  ● LIVE  |  ") +
-        valueStyle.Render(m.overview.DatabaseName)
-}
+	connInfo := ""
+	if m.overview != nil {
+		connInfo = labelStyle.Render("  ● LIVE  |  ") +
+			valueStyle.Render(m.overview.DatabaseName)
+	}
 
-clock := labelStyle.Render(now)
+	clock := labelStyle.Render(now)
 
-headerLeft := lipgloss.JoinHorizontal(lipgloss.Top, logo, title)
-headerRight := lipgloss.JoinHorizontal(lipgloss.Top, connInfo, labelStyle.Render("  |  "), clock)
+	headerLeft := lipgloss.JoinHorizontal(lipgloss.Top, logo, title)
+	headerRight := lipgloss.JoinHorizontal(lipgloss.Top, connInfo, labelStyle.Render("  |  "), clock)
 
-header := lipgloss.NewStyle().
-    Width(m.width).
-    Render(
-        lipgloss.JoinHorizontal(
-            lipgloss.Top,
-            lipgloss.NewStyle().Width(m.width/2).Render(headerLeft),
-            lipgloss.NewStyle().Width(m.width/2).Align(lipgloss.Right).Render(headerRight),
-        ),
-    )
+	header := lipgloss.NewStyle().
+		Width(m.width).
+		Render(
+			lipgloss.JoinHorizontal(
+				lipgloss.Top,
+				lipgloss.NewStyle().Width(m.width/2).Render(headerLeft),
+				lipgloss.NewStyle().Width(m.width/2).Align(lipgloss.Right).Render(headerRight),
+			),
+		)
 
 	footer := lipgloss.NewStyle().
-	    Foreground(lipgloss.Color("#555555")).
+		Foreground(lipgloss.Color("#555555")).
 		Render("  [TAB] switch panel  |  [R] refresh  |  [Q] quit  |  auto-refresh 2s |  cosmo v0.2.0")
 
 	return lipgloss.JoinVertical(
@@ -124,27 +123,27 @@ header := lipgloss.NewStyle().
 }
 
 func renderOverview(m Model) string {
-    if m.overview == nil {
-        return "loading..."
-    }
-    o := m.overview
+	if m.overview == nil {
+		return "loading..."
+	}
+	o := m.overview
 
-    connPct := float64(o.ActiveConns) / float64(o.MaxConns) * 100
-    connStyle := healthColor(100-connPct, 80, 50)
-    cacheStyle := healthColor(o.CacheHitRatio, 95, 80)
+	connPct := float64(o.ActiveConns) / float64(o.MaxConns) * 100
+	connStyle := healthColor(100-connPct, 80, 50)
+	cacheStyle := healthColor(o.CacheHitRatio, 95, 80)
 
-    return fmt.Sprintf("%s\n\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s",
-        titleStyle.Render("DB OVERVIEW"),
-        labelStyle.Render("database:"), valueStyle.Render(o.DatabaseName),
-        labelStyle.Render("size:"), valueStyle.Render(o.TotalSize),
-        labelStyle.Render("connections:"), connStyle.Render(
-            fmt.Sprintf("%d / %d", o.ActiveConns, o.MaxConns),
-        ),
-        labelStyle.Render("cache hit:"), cacheStyle.Render(
-            fmt.Sprintf("%.2f%%", o.CacheHitRatio),
-        ),
-        labelStyle.Render("uptime:"), valueStyle.Render(o.Uptime),
-    )
+	return fmt.Sprintf("%s\n\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s",
+		titleStyle.Render("DB OVERVIEW"),
+		labelStyle.Render("database:"), valueStyle.Render(o.DatabaseName),
+		labelStyle.Render("size:"), valueStyle.Render(o.TotalSize),
+		labelStyle.Render("connections:"), connStyle.Render(
+			fmt.Sprintf("%d / %d", o.ActiveConns, o.MaxConns),
+		),
+		labelStyle.Render("cache hit:"), cacheStyle.Render(
+			fmt.Sprintf("%.2f%%", o.CacheHitRatio),
+		),
+		labelStyle.Render("uptime:"), valueStyle.Render(o.Uptime),
+	)
 }
 
 func renderQueries(m Model) string {
@@ -166,21 +165,23 @@ func renderQueries(m Model) string {
 }
 
 func renderWAL(m Model) string {
-	if m.walStats == nil {
-		return "loading..."
+	walRate := fmt.Sprintf("%.3f MB/s", m.walStats.WALRateMBPS)
+	walRateStyle := goodStyle
+	if m.walStats.WALRateMBPS > 10 {
+		walRateStyle = warnStyle
 	}
-	w := m.walStats
-	return fmt.Sprintf("%s\n\n%s %s\n%s\n%s %s\n%s %s\n%s %s",
+	if m.walStats.WALRateMBPS > 50 {
+		walRateStyle = critStyle
+	}
+
+	return fmt.Sprintf("%s\n\n%s %s\n%s %s\n%s\n%s %s\n%s %s\n%s %s",
 		titleStyle.Render("WAL & MVCC"),
-		labelStyle.Render("current lsn:"),
-		goodStyle.Render(w.CurrentLSN),
+		labelStyle.Render("current lsn:"), goodStyle.Render(m.walStats.CurrentLSN),
+		labelStyle.Render("wal rate:"), walRateStyle.Render(walRate),
 		labelStyle.Render("────────────────────"),
-		labelStyle.Render("dead tuples:"),
-		valueStyle.Render(fmt.Sprintf("%d", w.DeadTuples)),
-		labelStyle.Render("live tuples:"),
-		goodStyle.Render(fmt.Sprintf("%d", w.LiveTuples)),
-		labelStyle.Render("checkpoints:"),
-		valueStyle.Render(fmt.Sprintf("%d", w.CheckpointsPS)),
+		labelStyle.Render("dead tuples:"), valueStyle.Render(fmt.Sprintf("%d", m.walStats.DeadTuples)),
+		labelStyle.Render("live tuples:"), goodStyle.Render(fmt.Sprintf("%d", m.walStats.LiveTuples)),
+		labelStyle.Render("checkpoints:"), valueStyle.Render(fmt.Sprintf("%d", m.walStats.CheckpointsPS)),
 	)
 }
 
