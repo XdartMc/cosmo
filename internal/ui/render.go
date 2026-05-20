@@ -133,25 +133,25 @@ func renderOverview(m Model) string {
 	cacheStyle := healthColor(o.CacheHitRatio, 95, 80)
 
 	connBar := progressBar(o.ActiveConns, o.MaxConns, 20)
+	cacheBar := progressBar(int(o.CacheHitRatio), 100, 20)
 
-    return fmt.Sprintf("%s\n\n%s %s\n%s %s\n%s %s\n%s %s\n%s\n%s %s\n%s %s\n%s %s",
-    titleStyle.Render("✦ DB OVERVIEW"),
-    labelStyle.Render("database:"), valueStyle.Render(o.DatabaseName),
-    labelStyle.Render("version:"), valueStyle.Render("PostgreSQL "+o.Version),
-    labelStyle.Render("size:"), valueStyle.Render(o.TotalSize),
-    labelStyle.Render("connections:"), connStyle.Render(
-        fmt.Sprintf("%d / %d", o.ActiveConns, o.MaxConns),
-    ),
-    connBar,
-    labelStyle.Render("cache hit:"), cacheStyle.Render(
-        fmt.Sprintf("%.2f%%", o.CacheHitRatio),
-    ),
-    labelStyle.Render("uptime:"), valueStyle.Render(o.Uptime),
-    labelStyle.Render("transactions:"), valueStyle.Render(
-        formatNumber(o.TransactionsPS),
-    ),
-)
-
+	return fmt.Sprintf(
+		"%s\n\n%s %s\n%s %s\n%s %s\n%s %s\n%s\n%s %s\n%s\n%s %s\n%s %s",
+		titleStyle.Render("✦ DB OVERVIEW"),
+		labelStyle.Render("database:"), valueStyle.Render(o.DatabaseName),
+		labelStyle.Render("version:"), valueStyle.Render("PostgreSQL "+o.Version),
+		labelStyle.Render("size:"), valueStyle.Render(o.TotalSize),
+		labelStyle.Render("connections:"), connStyle.Render(
+			fmt.Sprintf("%d / %d", o.ActiveConns, o.MaxConns),
+		),
+		connBar,
+		labelStyle.Render("cache hit:"), cacheStyle.Render(
+			fmt.Sprintf("%.2f%%", o.CacheHitRatio),
+		),
+		cacheBar,
+		labelStyle.Render("uptime:"), valueStyle.Render(o.Uptime),
+		labelStyle.Render("transactions:"), valueStyle.Render(formatNumber(o.TransactionsPS)),
+	)
 }
 
 func renderQueries(m Model) string {
@@ -186,8 +186,7 @@ func renderWAL(m Model) string {
 	return fmt.Sprintf("%s\n\n%s %s\n%s\n%s %s\n%s\n%s %s\n%s %s\n%s %s",
 		titleStyle.Render("✦ WAL & MVCC"),
 		labelStyle.Render("current lsn:"), goodStyle.Render(m.walStats.CurrentLSN),
-		labelStyle.Render("wal rate:"), walRateStyle.Render(walRate),
-		labelStyle.Render("wal rate:   ")+walRateStyle.Render(walRate)+" "+walBar,
+		labelStyle.Render("wal rate:"), walRateStyle.Render(walRate), walBar,
 		labelStyle.Render("────────────────────"),
 		labelStyle.Render("dead tuples:"), valueStyle.Render(formatNumber(m.walStats.DeadTuples)),
 		labelStyle.Render("live tuples:"), goodStyle.Render(formatNumber(m.walStats.LiveTuples)),
