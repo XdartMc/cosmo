@@ -30,6 +30,7 @@ func (db *DB) Close() {
 
 type OverviewStats struct {
 	DatabaseName    string
+	Version		    string
 	TotalSize       string
 	ActiveConns     int
 	IdleConns       int
@@ -71,33 +72,35 @@ type LockInfo struct {
 func (db *DB) GetOverviewStats(ctx context.Context) (*OverviewStats, error) {
 	var stats OverviewStats
 
-	err := db.conn.QueryRow(ctx, `
-		SELECT
-			current_database(),
-			pg_size_pretty(pg_database_size(current_database())),
-			count(*) FILTER (WHERE state = 'active'),
-			count(*) FILTER (WHERE state = 'idle'),
-			current_setting('max_connections')::int,
-			date_trunc('second', now() - pg_postmaster_start_time())::text,
-			ROUND(
-				sum(blks_hit) * 100.0 / NULLIF(sum(blks_hit) + sum(blks_read), 0),
-				2
-			),
-			sum(xact_commit + xact_rollback)
-		FROM pg_stat_activity, pg_stat_database
-		WHERE pg_stat_database.datname = current_database()
-		GROUP BY 1, 2, 6
-		LIMIT 1
-	`).Scan(
-		&stats.DatabaseName,
-		&stats.TotalSize,
-		&stats.ActiveConns,
-		&stats.IdleConns,
-		&stats.MaxConns,
-		&stats.Uptime,
-		&stats.CacheHitRatio,
-		&stats.TransactionsPS,
-	)
+err := db.conn.QueryRow(ctx, `
+    SELECT
+        current_database(),
+        split_part(version(), ' ', 2),
+        pg_size_pretty(pg_database_size(current_database())),
+        count(*) FILTER (WHERE state = 'active'),
+        count(*) FILTER (WHERE state = 'idle'),
+        current_setting('max_connections')::int,
+        date_trunc('second', now() - pg_postmaster_start_time())::text,
+        ROUND(
+            sum(blks_hit) * 100.0 / NULLIF(sum(blks_hit) + sum(blks_read), 0),
+            2
+        ),
+        sum(xact_commit + xact_rollback)
+    FROM pg_stat_activity, pg_stat_database
+    WHERE pg_stat_database.datname = current_database()
+    GROUP BY 1, 2, 3, 6, 7
+    LIMIT 1
+`).Scan(
+    &stats.DatabaseName,
+    &stats.Version,
+    &stats.TotalSize,
+    &stats.ActiveConns,
+    &stats.IdleConns,
+    &stats.MaxConns,
+    &stats.Uptime,
+    &stats.CacheHitRatio,
+    &stats.TransactionsPS,
+)
 	if err != nil {
 		return nil, err
 	}
