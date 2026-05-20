@@ -148,7 +148,7 @@ func renderOverview(m Model) string {
     ),
     labelStyle.Render("uptime:"), valueStyle.Render(o.Uptime),
     labelStyle.Render("transactions:"), valueStyle.Render(
-        fmt.Sprintf("%d", o.TransactionsPS),
+        formatNumber(o.TransactionsPS),
     ),
 )
 
@@ -187,9 +187,9 @@ func renderWAL(m Model) string {
 		labelStyle.Render("current lsn:"), goodStyle.Render(m.walStats.CurrentLSN),
 		labelStyle.Render("wal rate:"), walRateStyle.Render(walRate),
 		labelStyle.Render("────────────────────"),
-		labelStyle.Render("dead tuples:"), valueStyle.Render(fmt.Sprintf("%d", m.walStats.DeadTuples)),
-		labelStyle.Render("live tuples:"), goodStyle.Render(fmt.Sprintf("%d", m.walStats.LiveTuples)),
-		labelStyle.Render("checkpoints:"), valueStyle.Render(fmt.Sprintf("%d", m.walStats.CheckpointsPS)),
+		labelStyle.Render("dead tuples:"), valueStyle.Render(formatNumber(m.walStats.DeadTuples)),
+		labelStyle.Render("live tuples:"), goodStyle.Render(formatNumber(m.walStats.LiveTuples)),
+		labelStyle.Render("checkpoints:"), valueStyle.Render(formatNumber(m.walStats.CheckpointsPS)),
 	)
 }
 
@@ -238,4 +238,16 @@ func progressBar(current int, max int, width int) string {
 		return warnStyle.Render(bar)
 	}
 	return goodStyle.Render(bar)
+}
+
+func formatNumber(n int64) string {
+	str := fmt.Sprintf("%d", n)
+	result := ""
+	for i, c := range str {
+		if i > 0 && (len(str)-i)%3 == 0 {
+			result += ","
+		}
+		result += string(c)
+	}
+	return result
 }
